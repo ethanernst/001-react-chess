@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import useChessBoard from '../store/useChessboard';
+
+import { useBoardState } from '../store/BoardStateContext';
 
 import blackRook from '../assets/Chess_rdt45.svg';
 import blackBishop from '../assets/Chess_bdt45.svg';
@@ -20,6 +21,13 @@ const ScTile = styled.td`
   height: 75px;
   text-align: center;
   background-color: ${({ color }) => color};
+
+  ${({ selected }) => selected === 'active' && 'background-color: blue;'}
+
+  ${({ selected }) =>
+    selected === 'highlighted' && 'background-color: skyblue;'}
+
+  ${({ selected }) => selected === 'enemy' && 'background-color: lightcoral;'}
 
   img {
     width: 65px;
@@ -50,13 +58,20 @@ const getPiece = value => {
 };
 
 function Tile({ row, column, color }) {
-  const { getValue } = useChessBoard();
+  const { handleTileClick, boardState } = useBoardState();
 
-  const cellValue = getValue(row, column);
+  const tile = boardState[row][column];
+
+  const piece = tile.piece;
+  const state = tile.state;
+
+  const handleSelect = () => {
+    handleTileClick(row, column);
+  };
 
   return (
-    <ScTile color={color}>
-      {cellValue && <img src={getPiece(cellValue)} />}
+    <ScTile onClick={handleSelect} selected={state} color={color}>
+      {piece && <img src={getPiece(piece)} />}
     </ScTile>
   );
 }

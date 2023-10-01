@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 
-const initialBoardState = [
+const initialPieces = [
   [
     { type: 'rook', color: 'black' },
     { type: 'knight', color: 'black' },
@@ -47,22 +47,53 @@ const initialBoardState = [
   ],
 ];
 
-const useChessboard = () => {
+const BoardStateContext = createContext();
+
+export const BoardStateProvider = ({ children }) => {
+  const initialBoardState = initialPieces.map((row, rowIndex) =>
+    row.map((current, currentIndex) => ({
+      row: rowIndex,
+      column: currentIndex,
+      piece: current,
+      highlight: null,
+    }))
+  );
+
   const [boardState, setBoardState] = useState(initialBoardState);
+  const [selectedTile, setSelectedTile] = useState(null);
+  const [currentTurn, setCurrentTurn] = useState('white');
+  const [isGameWon, setIsGameWon] = useState(false);
 
-  const getValue = (row, col) => {
-    return boardState[row][col] || null;
-  };
-
-  const setValue = (row, col, value) => {
-    setBoardState(prevArray => {
-      const newArray = [...prevArray];
-      newArray[row][col] = value;
-      return newArray;
+  const updateTiles = selectedTile => {
+    setBoardState(prev => {
+      const updatedBoard = [...prev];
+      updatedBoard[selectedTile.row][selectedTile.column].highlight = 'active';
+      return updatedBoard;
     });
   };
 
-  return { boardState, getValue, setValue };
+  const handleTileClick = (row, column) => {
+    setSelectedTile({ row, column });
+    updateTiles({ row, column });
+  };
+
+  const boardStateValue = {
+    boardState,
+    setBoardState,
+    selectedTile,
+    setSelectedTile,
+    currentTurn,
+    setCurrentTurn,
+    isGameWon,
+    setIsGameWon,
+    handleTileClick,
+  };
+
+  return (
+    <BoardStateContext.Provider value={boardStateValue}>
+      {children}
+    </BoardStateContext.Provider>
+  );
 };
 
-export default useChessboard;
+export const useBoardState = () => useContext(BoardStateContext);
