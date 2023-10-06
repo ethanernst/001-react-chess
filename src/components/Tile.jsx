@@ -1,6 +1,7 @@
-import styled from 'styled-components';
+import { useContext } from 'react';
+import GlobalContext from '../store/GlobalContext';
 
-import { useBoardState } from '../store/BoardStateContext';
+import styled from 'styled-components';
 
 import blackRook from '../assets/Chess_rdt45.svg';
 import blackBishop from '../assets/Chess_bdt45.svg';
@@ -57,20 +58,31 @@ const getPiece = value => {
   ).url;
 };
 
+const getColor = highlight => {
+  switch (highlight) {
+    case 'active':
+      return 'blue';
+    case 'highlighted':
+      return 'skyblue';
+    case 'enemy':
+      return 'lightcoral';
+  }
+};
+
 function Tile({ row, column, color }) {
-  const { handleTileClick, boardState } = useBoardState();
+  const { handleTileClick, boardState } = useContext(GlobalContext);
 
   const tile = boardState[row][column];
 
   const piece = tile.piece;
-  const state = tile.state;
+  const tileColor = tile.highlight ? getColor(tile.highlight) : color;
 
   const handleSelect = () => {
     handleTileClick(row, column);
   };
 
   return (
-    <ScTile onClick={handleSelect} selected={state} color={color}>
+    <ScTile onClick={handleSelect} color={tileColor}>
       {piece && <img src={getPiece(piece)} />}
     </ScTile>
   );

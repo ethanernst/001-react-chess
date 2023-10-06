@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext } from 'react';
 
 const initialPieces = [
   [
@@ -47,9 +47,9 @@ const initialPieces = [
   ],
 ];
 
-const BoardStateContext = createContext();
+const GlobalContext = createContext();
 
-export const BoardStateProvider = ({ children }) => {
+export const GlobalContextProvider = ({ children }) => {
   const initialBoardState = initialPieces.map((row, rowIndex) =>
     row.map((current, currentIndex) => ({
       row: rowIndex,
@@ -64,6 +64,11 @@ export const BoardStateProvider = ({ children }) => {
   const [currentTurn, setCurrentTurn] = useState('white');
   const [isGameWon, setIsGameWon] = useState(false);
 
+  const handleMove = (row, column) => {
+    setSelectedTile(null);
+    updateTiles({ row, column });
+  };
+
   const updateTiles = selectedTile => {
     setBoardState(prev => {
       const updatedBoard = [...prev];
@@ -73,11 +78,15 @@ export const BoardStateProvider = ({ children }) => {
   };
 
   const handleTileClick = (row, column) => {
-    setSelectedTile({ row, column });
-    updateTiles({ row, column });
+    if (selectedTile) {
+      handleMove(row, column);
+    } else {
+      setSelectedTile({ row, column });
+      updateTiles({ row, column });
+    }
   };
 
-  const boardStateValue = {
+  const globalStateValue = {
     boardState,
     setBoardState,
     selectedTile,
@@ -90,10 +99,10 @@ export const BoardStateProvider = ({ children }) => {
   };
 
   return (
-    <BoardStateContext.Provider value={boardStateValue}>
+    <GlobalContext.Provider value={globalStateValue}>
       {children}
-    </BoardStateContext.Provider>
+    </GlobalContext.Provider>
   );
 };
 
-export const useBoardState = () => useContext(BoardStateContext);
+export default GlobalContext;

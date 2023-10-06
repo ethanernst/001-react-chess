@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-import { useBoardState } from '../store/BoardStateContext';
-import { useGameState } from '../store/GameStateContext';
+import { useContext, useEffect } from 'react';
+import GlobalContext from '../store/GlobalContext';
 
 import Tile from './Tile';
 
@@ -68,12 +68,16 @@ const generateBoard = () => {
 };
 
 function Board() {
-  const { isGameWon } = useGameState(); // for resetting in the future
+  const { isGameWon } = useContext(GlobalContext); // for resetting in the future
 
   const board = generateBoard();
 
+  useEffect(() => {
+    board.push();
+  }, []);
+
   return (
-    <ScBoard>
+    <ScBoard className="noselect">
       <tbody>{board}</tbody>
     </ScBoard>
   );
