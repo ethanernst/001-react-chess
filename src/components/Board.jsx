@@ -1,8 +1,5 @@
 import styled from 'styled-components';
 
-import { useContext, useEffect } from 'react';
-import GlobalContext from '../store/GlobalContext';
-
 import Tile from './Tile';
 
 const ScBoard = styled.table`
@@ -19,7 +16,7 @@ const ScBoard = styled.table`
   }
 `;
 
-const generateBoard = () => {
+function Board() {
   console.log('Generating board');
 
   const board = [];
@@ -40,10 +37,7 @@ const generateBoard = () => {
     const rowTiles = [];
 
     for (let col = 0; col < 8; col++) {
-      const color = (row + col) % 2 === 0 ? 'white' : 'gray';
-      rowTiles.push(
-        <Tile row={row} column={col} color={color} key={`${row}${col}`} />
-      );
+      rowTiles.push(<Tile row={row} column={col} key={`${row}${col}`} />);
     }
 
     board.push(
@@ -63,18 +57,6 @@ const generateBoard = () => {
       ))}
     </tr>
   );
-
-  return board;
-};
-
-function Board() {
-  const { isGameWon } = useContext(GlobalContext); // for resetting in the future
-
-  const board = generateBoard();
-
-  useEffect(() => {
-    board.push();
-  }, []);
 
   return (
     <ScBoard className="noselect">

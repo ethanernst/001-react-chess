@@ -23,13 +23,6 @@ const ScTile = styled.td`
   text-align: center;
   background-color: ${({ color }) => color};
 
-  ${({ selected }) => selected === 'active' && 'background-color: blue;'}
-
-  ${({ selected }) =>
-    selected === 'highlighted' && 'background-color: skyblue;'}
-
-  ${({ selected }) => selected === 'enemy' && 'background-color: lightcoral;'}
-
   img {
     width: 65px;
     height: 65px;
@@ -69,20 +62,24 @@ const getColor = highlight => {
   }
 };
 
-function Tile({ row, column, color }) {
-  const { handleTileClick, boardState } = useContext(GlobalContext);
+function Tile({ row, column }) {
+  const { boardState, handleTileClick } = useContext(GlobalContext);
 
   const tile = boardState[row][column];
 
   const piece = tile.piece;
-  const tileColor = tile.highlight ? getColor(tile.highlight) : color;
+  const tileColor = tile.highlight
+    ? getColor(tile.highlight)
+    : (row + column) % 2 === 0
+    ? 'white'
+    : 'gray';
 
-  const handleSelect = () => {
+  const handleClick = () => {
     handleTileClick(row, column);
   };
 
   return (
-    <ScTile onClick={handleSelect} color={tileColor}>
+    <ScTile onClick={handleClick} color={tileColor}>
       {piece && <img src={getPiece(piece)} />}
     </ScTile>
   );
