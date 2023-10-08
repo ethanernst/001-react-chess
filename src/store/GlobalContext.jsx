@@ -70,12 +70,10 @@ export const GlobalContextProvider = ({ children }) => {
   const [selectedTile, setSelectedTile] = useState(null);
   const [currentTurn, setCurrentTurn] = useState('white');
   const [isGameWon, setIsGameWon] = useState(false);
+  const [gameType, setGameType] = useState('chess');
 
-  // effect that watches the highlight map and updates the board with new highlights when it changes
+  // effect that watches the highlight map and updates the boardState with new highlights when it changes
   useEffect(() => {
-    console.log('current board state:', boardState);
-    console.log('current selectedTile:', selectedTile);
-    console.log('current highlight state:', highlightMap);
     setBoardState(prev => {
       const updatedBoard = [];
 
@@ -90,19 +88,26 @@ export const GlobalContextProvider = ({ children }) => {
         updatedBoard.push(rowTiles);
       });
 
-      if (selectedTile)
+      if (selectedTile) {
         updatedBoard[selectedTile.row][selectedTile.column].highlight =
           'active';
-      console.log('updated board state:', updatedBoard);
-      console.log('==========turn end==========');
-      console.log('');
+      }
       return updatedBoard;
     });
   }, [highlightMap]);
 
+  const resetBoard = () => {
+    if (gameType === 'chess') {
+      setBoardState(initialBoardState);
+      setHighlightMap(emptyHighlightMap);
+      setCurrentTurn('white');
+      setSelectedTile(null);
+      setIsGameWon(false);
+    }
+  };
+
   // moves piece from coord to coord
   const movePiece = (from, to) => {
-    console.log(from, to);
     setBoardState(prev => {
       const selectedPiece = prev[from.row][from.column].piece;
 
@@ -118,7 +123,6 @@ export const GlobalContextProvider = ({ children }) => {
         })
       );
 
-      console.log(updatedBoardState);
       return updatedBoardState;
     });
     setHighlightMap(emptyHighlightMap);
@@ -136,23 +140,16 @@ export const GlobalContextProvider = ({ children }) => {
   // main logic handler for tile click
   const handleTileClick = (row, column) => {
     const newSelectedTile = boardState[row][column];
-    console.log(`currently selected tile: ${JSON.stringify(selectedTile)}`);
-    console.log(`new selected tile: ${JSON.stringify(newSelectedTile)}`);
 
     // if there is a currently selected tile
     if (selectedTile) {
       // checks if selected tile is already selected and does nothing
       if (selectedTile.row === row && selectedTile.column === column) {
-        console.log('selected tile is already selected, doing nothing');
-        console.log('==========turn end==========');
-        console.log('');
         return;
       }
 
-      console.log('a tile is already selected, validating move');
       // checks if the selected tile is a valid move for the current piece
       const validMove = validateMove(row, column);
-      console.log(`is valid move: ${validMove}`);
 
       if (validMove) {
         // valid: move piece, update score and captures pieces, reset selected piece, switch move, update board
@@ -161,12 +158,8 @@ export const GlobalContextProvider = ({ children }) => {
         setCurrentTurn(prev => (prev === 'white' ? 'black' : 'white'));
       } else {
         // invalid: check if selected piece is the same as the turn
-        console.log('checking if piece can be selected this turn');
-
         if (newSelectedTile?.piece?.color === currentTurn) {
           // set selected piece to new piece, get moves for tile, updateboard
-          console.log('piece can be selected, changing selection');
-
           setSelectedTile({ row, column });
           setHighlightMap(emptyHighlightMap);
           calculateMoveHelper(
@@ -177,8 +170,6 @@ export const GlobalContextProvider = ({ children }) => {
           );
         } else {
           // reset highlights, reset selected tile, update board
-          console.log('piece is empty or invalid, resetting highlights');
-
           setSelectedTile(null);
           setHighlightMap(emptyHighlightMap);
         }
@@ -186,14 +177,10 @@ export const GlobalContextProvider = ({ children }) => {
     }
     // if there NOT a currently selected tile
     else {
-      console.log('no selected tile, selecting new tile');
+      // check if selected tile is a valid selection
       const newTile = boardState[row][column];
-      console.log(newTile);
-
       if (newTile?.piece && newTile.piece.color === currentTurn) {
         // valid selection, set selectedTile, getMoves for tile, updateBoard
-        console.log('selection is valid');
-
         setSelectedTile({ row, column });
         calculateMoveHelper(
           boardState,
@@ -201,10 +188,6 @@ export const GlobalContextProvider = ({ children }) => {
           { row, column },
           setHighlightMap
         );
-      } else {
-        console.log('invalid selection, doing nothing');
-        console.log('==========turn end==========');
-        console.log('');
       }
     }
   };
@@ -219,6 +202,9 @@ export const GlobalContextProvider = ({ children }) => {
     isGameWon,
     setIsGameWon,
     handleTileClick,
+    resetBoard,
+    gameType,
+    setGameType,
   };
 
   return (

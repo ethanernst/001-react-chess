@@ -5,11 +5,7 @@ function calculateMoveHelper(
   selectedTile,
   setHighlightMap
 ) {
-  console.log('calculating move');
-
   const piece = boardState[selectedTile.row][selectedTile.column].piece;
-
-  console.log('moving piece: ', piece);
 
   const moves = [];
 
@@ -24,6 +20,55 @@ function calculateMoveHelper(
       return false;
     }
     return true;
+  };
+
+  // adds valid tiles to moves array for pawn moveset
+  const checkPawn = (direction, startingPos) => {
+    // check 2 tiles in front
+    if (
+      boardState[selectedTile.row + direction][selectedTile.column].piece ===
+      null
+    ) {
+      moves.push({
+        row: selectedTile.row + direction,
+        column: selectedTile.column,
+      });
+      if (
+        startingPos &&
+        boardState[selectedTile.row + 2 * direction][selectedTile.column]
+          .piece === null
+      ) {
+        moves.push({
+          row: selectedTile.row + 2 * direction,
+          column: selectedTile.column,
+        });
+      }
+    }
+    // check diagonal tiles
+    if (
+      selectedTile.column - 1 >= 0 &&
+      boardState[selectedTile.row + direction][selectedTile.column - 1]
+        .piece !== null &&
+      boardState[selectedTile.row + direction][selectedTile.column - 1].piece
+        .color !== currentTurn
+    ) {
+      moves.push({
+        row: selectedTile.row + direction,
+        column: selectedTile.column - 1,
+      });
+    }
+    if (
+      selectedTile.column + 1 < 7 &&
+      boardState[selectedTile.row + direction][selectedTile.column + 1]
+        .piece !== null &&
+      boardState[selectedTile.row + direction][selectedTile.column + 1].piece
+        .color !== currentTurn
+    ) {
+      moves.push({
+        row: selectedTile.row + direction,
+        column: selectedTile.column + 1,
+      });
+    }
   };
 
   // adds valid tiles to moves array in a line in a given direction (direction = 'up'||'down'||'left'||'right')
@@ -120,56 +165,7 @@ function calculateMoveHelper(
     const startingPos =
       (currentTurn === 'white' && selectedTile.row === 6) ||
       (currentTurn === 'black' && selectedTile.row === 1);
-
-    if (startingPos) {
-      boardState.forEach(boardRow =>
-        boardRow.forEach(tile => {
-          if (tile.column === selectedTile.column) {
-            if (tile.row === selectedTile.row + direction) {
-              if (boardState[tile.row][tile.column].piece === null) {
-                moves.push({ row: tile.row, column: tile.column });
-                if (
-                  boardState[tile.row + direction][tile.column].piece === null
-                ) {
-                  moves.push({
-                    row: tile.row + direction,
-                    column: tile.column,
-                  });
-                }
-              }
-            }
-          } else if (Math.abs(tile.column - selectedTile.column) === 1) {
-            if (
-              tile.row === selectedTile.row + direction &&
-              boardState[tile.row][tile.column].piece !== null &&
-              boardState[tile.row][tile.column].piece.color !== currentTurn
-            ) {
-              moves.push({ row: tile.row, column: tile.column });
-            }
-          }
-        })
-      );
-    } else {
-      boardState.forEach(boardRow =>
-        boardRow.forEach(tile => {
-          if (tile.column === selectedTile.column) {
-            if (tile.row === selectedTile.row + direction) {
-              if (boardState[tile.row][tile.column].piece === null) {
-                moves.push({ row: tile.row, column: tile.column });
-              }
-            }
-          } else if (Math.abs(tile.column - selectedTile.column) === 1) {
-            if (
-              tile.row === selectedTile.row + direction &&
-              boardState[tile.row][tile.column].piece !== null &&
-              boardState[tile.row][tile.column].piece.color !== currentTurn
-            ) {
-              moves.push({ row: tile.row, column: tile.column });
-            }
-          }
-        })
-      );
-    }
+    checkPawn(direction, startingPos);
   }
 
   if (piece.type === 'rook') {
@@ -221,17 +217,14 @@ function calculateMoveHelper(
 
   // if available moves, update highlightMap
   if (moves) {
-    console.log('moves: ', moves);
-
     setHighlightMap(prev => {
       const updatedHighlightMap = [...prev];
 
+      // loop through moves and update corresponding highlights
       moves.forEach(move => {
-        let enemyPiece = false;
-        if (boardState[move.row][move.column]?.piece) {
-          enemyPiece =
-            boardState[move.row][move.column].piece.color !== currentTurn;
-        }
+        const enemyPiece =
+          boardState[move.row][move.column].piece &&
+          boardState[move.row][move.column].piece.color !== currentTurn;
 
         updatedHighlightMap[move.row][move.column] = enemyPiece
           ? 'enemy'
@@ -241,8 +234,6 @@ function calculateMoveHelper(
       updatedHighlightMap[selectedTile.row][selectedTile.column] = 'active';
       return updatedHighlightMap;
     });
-  } else {
-    console.log('no moves');
   }
 }
 

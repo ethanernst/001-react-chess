@@ -1,13 +1,14 @@
 import styled from 'styled-components';
 
 import Board from './components/Board';
+import ProjectInfo from './components/ProjectInfo';
 
 const Main = styled.div`
   width: 100vw;
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
 `;
 
 const Footer = styled.div`
@@ -22,6 +23,7 @@ const license =
 function App() {
   return (
     <>
+      <ProjectInfo />
       <Main>
         <Board />
       </Main>
