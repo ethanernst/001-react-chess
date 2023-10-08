@@ -17,8 +17,6 @@ const ScBoard = styled.table`
 `;
 
 function Board() {
-  console.log('Generating board');
-
   const board = [];
   const rowLabels = [8, 7, 6, 5, 4, 3, 2, 1];
   const columnLabels = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];

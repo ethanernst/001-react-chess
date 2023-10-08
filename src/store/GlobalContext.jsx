@@ -96,6 +96,21 @@ export const GlobalContextProvider = ({ children }) => {
     });
   }, [highlightMap]);
 
+  // effect that watches the board and ends the game after a king is captured
+  useEffect(() => {
+    const pieces = [];
+    boardState.forEach(row => row.forEach(tile => pieces.push(tile.piece)));
+    const currentTurnKing = pieces.find(
+      piece => piece?.type === 'king' && piece?.color === currentTurn
+    );
+
+    if (!currentTurnKing) {
+      setCurrentTurn(prev => (prev === 'white' ? 'black' : 'white'));
+      setIsGameWon(true);
+    }
+  }, [boardState]);
+
+  // resets the board
   const resetBoard = () => {
     if (gameType === 'chess') {
       setBoardState(initialBoardState);
@@ -139,6 +154,8 @@ export const GlobalContextProvider = ({ children }) => {
 
   // main logic handler for tile click
   const handleTileClick = (row, column) => {
+    if (isGameWon) return;
+
     const newSelectedTile = boardState[row][column];
 
     // if there is a currently selected tile
